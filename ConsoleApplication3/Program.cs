@@ -53,7 +53,9 @@ namespace FunctionalSharp
                     Console.WriteLine(x.Name);
                     return true;
                 }).Default(x => false);
-            var t9 = Option.Some(Option.Some(1)).flatten<int>();
+            //var t9 = Option.Some(Option.Some(1)).flattenRec<int>();
+            //var t10 = Option.Some(Option.Some(Option.None<int>())).flattenRec<int>();
+            //var t11 = Option.Some(Option.Some(Option.Some(2))).flattenRec<string>();
 
             Console.ReadKey();
         }

@@ -102,11 +102,11 @@ namespace FunctionalSharp
         }
     }
 
-    public interface OptionBase {
-        Option<T1> flatten<T1>();
-    }
+    //public interface OptionBase {
+    //    Option<T1> flattenRec<T1>();
+    //}
 
-    public interface Option<T>: OptionBase
+    public interface Option<T> //: OptionBase
     {
         bool isDefinded { get; }
         bool isEmpty { get; }
@@ -146,9 +146,9 @@ namespace FunctionalSharp
         {
             return new Some<T1>(noneAction());
         }
-        public Option<T1> flatten<T1>() {
-            return Option.None<T1>();
-        }
+        //public Option<T1> flattenRec<T1>() {
+        //    return Option.None<T1>();
+        //}
         public T getOrElse(T other) { return other; }
         public T get
         {
@@ -179,14 +179,18 @@ namespace FunctionalSharp
         {
             return new Some<T1>(someAction(data));
         }
-        public Option<T1> flatten<T1>()
-        {
-            Option<T1> result = null;
-            if (typeof(T).GetInterfaces().Contains(typeof(OptionBase)))
-                    result = ((OptionBase)this.data).flatten<T1>();
-            else result = (Option<T1>)this;
-            return result;
-        }
+        //public Option<T1> flattenRec<T1>()
+        //{
+        //    Option<T1> result = null;
+        //    if(typeof(T) == typeof(T1))
+        //        result = (Option<T1>)this;
+        //    else if (typeof(T).GetInterfaces().Contains(typeof(OptionBase)))
+        //            result = ((OptionBase)this.data).flattenRec<T1>();
+        //    if (result == null)
+        //        throw new ArgumentException("Cannot cast Option<"+typeof(T).FullName +
+        //            "> to Option<" + typeof(T1).FullName + ">");
+        //    return result;
+        //}
         public T getOrElse(T other) { return this.data; }
         public T get
         {
@@ -197,12 +201,16 @@ namespace FunctionalSharp
         }
     }
 
+    //TODO: separate types for Success and Failure - caching for Failure as with None<T>
     public class Try<T>
     {
-        public Boolean isSuccess { get; }
-        public Boolean isFailure { get; }
+        public bool isSuccess { get; }
+        public bool isFailure { get; }
         private T result;
         private Exception ex;
+
+        /*failed Try*/
+        public Try() { isFailure = true; }
 
         public Try(Func<T> action)
         {
@@ -234,12 +242,18 @@ namespace FunctionalSharp
             else throw new ArgumentException("Try succeded, cannot get exception");
         }
 
+        public Try<T1> Map<T1>(Func<T, T1> action)
+        {
+            if (this.isFailure)
+                return new Try<T1>();
+            else {
+                return new Try<T1>(() => action(this.result));
+            }
+        }
         public Try<T1> OnSuccess<T1>(Func<T, T1> action)
         {
-            Func<T1> func = () => action(this.result);
-            return new Try<T1>(func);
+            return new Try<T1>(() => action(this.result));
         }
-
         public Try<T1> OnFailure<T1>(Func<Exception, T1> action)
         {
             Func<T1> func = () => action(this.ex);
