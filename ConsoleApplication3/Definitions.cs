@@ -44,6 +44,12 @@ namespace ConsoleApplication3
             }
             return this.result;
         }
+        public Option<T2> Get() {
+            if (isComputed)
+                return new Some<T2>(result);
+            else return None.Get<T2>();
+        }
+
         public class CaseClause
         {
             private Match<T1, T2> parent;
@@ -98,17 +104,37 @@ namespace ConsoleApplication3
 
     public abstract class Option<T>
     {
-        public virtual Boolean isDefinded { get; }
-        public virtual Boolean isEmpty { get; }
+        public virtual bool isDefinded { get; }
+        public virtual bool isEmpty { get; }
         public abstract T get { get; }
+        public abstract T getOrElse(T other);
         public abstract Option<T1> Map<T1>(Func<T, T1> action);
+    }
+
+    public static class None
+    {
+        public static Option<T> Get<T>()
+        {
+            return None<T>.New<T>();
+        }
     }
 
     public class None<T> : Option<T>
     {
-        public override Boolean isDefinded { get { return false; } }
-        public override Boolean isEmpty { get { return true; } }
+        private None() { }
+        private static ConcurrentDictionary<Type, Object> cache
+            = new ConcurrentDictionary<Type, Object>();
+        public static Option<T> New<T>() {
+            var key = typeof(T);
+            if (!cache.ContainsKey(key)) {
+                cache.TryAdd(key, (Object)new None<T>());
+            }
+            return (Option<T>)cache[key];
+        }
+        public override bool isDefinded { get { return false; } }
+        public override bool isEmpty { get { return true; } }
         public override Option<T1> Map<T1>(Func<T, T1> action) { return new None<T1>(); }
+        public override T getOrElse(T other) { return other; }
         public override T get
         {
             get
@@ -120,8 +146,8 @@ namespace ConsoleApplication3
 
     public class Some<T> : Option<T>
     {
-        public override Boolean isDefinded { get { return true; } }
-        public override Boolean isEmpty { get { return false; } }
+        public override bool isDefinded { get { return true; } }
+        public override bool isEmpty { get { return false; } }
         private T data { get; }
         public Some(T data)
         {
@@ -134,6 +160,7 @@ namespace ConsoleApplication3
             var res = action(this.data);
             return new Some<T1>(res);
         }
+        public override T getOrElse(T other) { return this.data; }
         public override T get
         {
             get

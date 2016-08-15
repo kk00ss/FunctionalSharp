@@ -33,9 +33,9 @@ namespace ConsoleApplication3
 
             var t3 = new List<Option<string>>() {
                 new Some<string>("StringOption"),
-                new None<string>() ,
+                None.Get<string>(),
                 new Some<string>("Bla"),
-                new None<string>() };
+                None.Get<string>() };
             var t4 = t3.Select(x => x.Map<int>(y => y.Length));
             foreach (var opt in t4)
             {
