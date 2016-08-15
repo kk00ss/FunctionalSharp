@@ -1,7 +1,7 @@
 # FunctionalSharp
 a few primitives for functional programming in C#
 
-```
+```C#
     class Program
     {
         static void Main(string[] args)
