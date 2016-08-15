@@ -53,6 +53,7 @@ namespace FunctionalSharp
                     Console.WriteLine(x.Name);
                     return true;
                 }).Default(x => false);
+            var t9 = Option.Some(Option.Some(1)).flatten<int>();
 
             Console.ReadKey();
         }

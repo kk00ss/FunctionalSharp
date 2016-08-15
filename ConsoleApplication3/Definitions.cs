@@ -102,13 +102,18 @@ namespace FunctionalSharp
         }
     }
 
-    public interface Option<T>
+    public interface OptionBase {
+        Option<T1> flatten<T1>();
+    }
+
+    public interface Option<T>: OptionBase
     {
         bool isDefinded { get; }
         bool isEmpty { get; }
         T get { get; }
         T getOrElse(T other);
         Option<T1> Map<T1>(Func<T, T1> action);
+        Option<T1> Match<T1>(Func<T, T1> someAction, Func<T1> noneAction);
     }
 
     public static class Option {
@@ -137,6 +142,13 @@ namespace FunctionalSharp
         public bool isDefinded { get { return false; } }
         public bool isEmpty { get { return true; } }
         public Option<T1> Map<T1>(Func<T, T1> action) { return new None<T1>(); }
+        public Option<T1> Match<T1>(Func<T, T1> someAction, Func<T1> noneAction)
+        {
+            return new Some<T1>(noneAction());
+        }
+        public Option<T1> flatten<T1>() {
+            return Option.None<T1>();
+        }
         public T getOrElse(T other) { return other; }
         public T get
         {
@@ -162,6 +174,18 @@ namespace FunctionalSharp
         {
             var res = action(this.data);
             return new Some<T1>(res);
+        }
+        public Option<T1> Match<T1>(Func<T, T1> someAction, Func<T1> noneAction)
+        {
+            return new Some<T1>(someAction(data));
+        }
+        public Option<T1> flatten<T1>()
+        {
+            Option<T1> result = null;
+            if (typeof(T).GetInterfaces().Contains(typeof(OptionBase)))
+                    result = ((OptionBase)this.data).flatten<T1>();
+            else result = (Option<T1>)this;
+            return result;
         }
         public T getOrElse(T other) { return this.data; }
         public T get
