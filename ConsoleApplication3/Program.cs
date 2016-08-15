@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-
-namespace ConsoleApplication3
+namespace FunctionalSharp
 {
     class Program
     {
@@ -32,10 +29,10 @@ namespace ConsoleApplication3
             else t2 = e1.Right;
 
             var t3 = new List<Option<string>>() {
-                new Some<string>("StringOption"),
-                None.Get<string>(),
+                Option.Some("StringOption"),
+                Option.None<string>(),
                 new Some<string>("Bla"),
-                None.Get<string>() };
+                Option.None<string>() };
             var t4 = t3.Select(x => x.Map<int>(y => y.Length));
             foreach (var opt in t4)
             {

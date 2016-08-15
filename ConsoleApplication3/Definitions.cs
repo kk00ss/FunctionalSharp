@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.Collections.Concurrent;
 
-namespace ConsoleApplication3
+namespace FunctionalSharp
 {
     class Match<T1, T2>
     {
@@ -47,7 +47,7 @@ namespace ConsoleApplication3
         public Option<T2> Get() {
             if (isComputed)
                 return new Some<T2>(result);
-            else return None.Get<T2>();
+            else return Option.None<T2>();
         }
 
         public class CaseClause
@@ -102,20 +102,23 @@ namespace ConsoleApplication3
         }
     }
 
-    public abstract class Option<T>
+    public interface Option<T>
     {
-        public virtual bool isDefinded { get; }
-        public virtual bool isEmpty { get; }
-        public abstract T get { get; }
-        public abstract T getOrElse(T other);
-        public abstract Option<T1> Map<T1>(Func<T, T1> action);
+        bool isDefinded { get; }
+        bool isEmpty { get; }
+        T get { get; }
+        T getOrElse(T other);
+        Option<T1> Map<T1>(Func<T, T1> action);
     }
 
-    public static class None
-    {
-        public static Option<T> Get<T>()
+    public static class Option {
+        public static Option<T> None<T>()
         {
-            return None<T>.New<T>();
+            return FunctionalSharp.None<T>.New();
+        }
+        public static Option<T> Some<T>(T data)
+        {
+            return new Some<T>(data);
         }
     }
 
@@ -124,18 +127,18 @@ namespace ConsoleApplication3
         private None() { }
         private static ConcurrentDictionary<Type, Object> cache
             = new ConcurrentDictionary<Type, Object>();
-        public static Option<T> New<T>() {
+        public static Option<T> New() {
             var key = typeof(T);
             if (!cache.ContainsKey(key)) {
                 cache.TryAdd(key, (Object)new None<T>());
             }
             return (Option<T>)cache[key];
         }
-        public override bool isDefinded { get { return false; } }
-        public override bool isEmpty { get { return true; } }
-        public override Option<T1> Map<T1>(Func<T, T1> action) { return new None<T1>(); }
-        public override T getOrElse(T other) { return other; }
-        public override T get
+        public bool isDefinded { get { return false; } }
+        public bool isEmpty { get { return true; } }
+        public Option<T1> Map<T1>(Func<T, T1> action) { return new None<T1>(); }
+        public T getOrElse(T other) { return other; }
+        public T get
         {
             get
             {
@@ -146,8 +149,8 @@ namespace ConsoleApplication3
 
     public class Some<T> : Option<T>
     {
-        public override bool isDefinded { get { return true; } }
-        public override bool isEmpty { get { return false; } }
+        public bool isDefinded { get { return true; } }
+        public bool isEmpty { get { return false; } }
         private T data { get; }
         public Some(T data)
         {
@@ -155,13 +158,13 @@ namespace ConsoleApplication3
                 throw new ArgumentNullException();
             this.data = data;
         }
-        public override Option<T1> Map<T1>(Func<T, T1> action)
+        public Option<T1> Map<T1>(Func<T, T1> action)
         {
             var res = action(this.data);
             return new Some<T1>(res);
         }
-        public override T getOrElse(T other) { return this.data; }
-        public override T get
+        public T getOrElse(T other) { return this.data; }
+        public T get
         {
             get
             {
